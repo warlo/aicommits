@@ -26,7 +26,7 @@ const parseAssert = (
 const configParsers = {
 	OPENAI_KEY(key?: string) {
 		if (!key) {
-			throw new KnownError('Please set your OpenAI API key via `aicommits config set OPENAI_KEY=<your token>`');
+			throw new KnownError('Please set your OpenAI API key via `aicommits config set OPENAI_KEY=<your token>`. If you are defining your own hostname, just set a random key.');
 		}
 		parseAssert('OPENAI_KEY', key.startsWith('sk-'), 'Must start with "sk-"');
 		// Key can range from 43~51 characters. There's no spec to assert this.
@@ -72,6 +72,24 @@ const configParsers = {
 		parseAssert('proxy', /^https?:\/\//.test(url), 'Must be a valid URL');
 
 		return url;
+	},
+	hostname(url?: string) {
+		if (!url || url.length === 0) {
+			return undefined;
+		}
+
+		parseAssert('hostname', /^https?:\/\//.test(url), 'Must be a valid URL');
+
+		return url;
+	},
+	port(port?: number) {
+		if (!port) {
+			return undefined;
+		}
+
+		parseAssert('hostname', 65536 >= port && port >= 0, 'Must be a valid port');
+
+		return port;
 	},
 	model(model?: string) {
 		if (!model || model.length === 0) {

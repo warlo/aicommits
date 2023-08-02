@@ -10,8 +10,9 @@ import { KnownError } from './error.js';
 import type { CommitType } from './config.js';
 import { generatePrompt } from './prompt.js';
 
-const httpsPost = async (
+const httpPost = async (
 	hostname: string,
+	port: number,
 	path: string,
 	headers: Record<string, string>,
 	json: unknown,
@@ -25,7 +26,7 @@ const httpsPost = async (
 	const postContent = JSON.stringify(json);
 	const request = https.request(
 		{
-			port: 443,
+			port,
 			hostname,
 			path,
 			method: 'POST',
@@ -68,9 +69,12 @@ const createChatCompletion = async (
 	json: CreateChatCompletionRequest,
 	timeout: number,
 	proxy?: string,
+	hostname?: string,
+	port?: number,
 ) => {
-	const { response, data } = await httpsPost(
-		'api.openai.com',
+	const { response, data } = await httpPost(
+		hostname || "api.openapi.com",
+		port || 443,
 		'/v1/chat/completions',
 		{
 			Authorization: `Bearer ${apiKey}`,
@@ -132,6 +136,8 @@ export const generateCommitMessage = async (
 	type: CommitType,
 	timeout: number,
 	proxy?: string,
+	hostname?: string,
+	port?: number,
 ) => {
 	try {
 		const completion = await createChatCompletion(
@@ -158,6 +164,8 @@ export const generateCommitMessage = async (
 			},
 			timeout,
 			proxy,
+			hostname,
+			port,
 		);
 
 		return deduplicateMessages(
